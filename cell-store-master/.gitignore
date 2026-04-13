@@ -1,0 +1,23 @@
+# Backend
+.venv/
+__pycache__/
+*.pyc
+database.db
+
+# Frontend
+node_modules/
+frontend/node_modules/
+build/
+frontend/build/
+.env
+.env.local
+.railway/
+.vercel/
+backend/.env.local
+backend/.railway/
+frontend/.env.local
+frontend/.railway/
+
+# OS
+.DS_Store
+Thumbs.db
