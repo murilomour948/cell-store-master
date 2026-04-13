@@ -90,9 +90,53 @@ cd C:\Users\user\Downloads\cell-store-master\cell-store-master
 python -m backend.migrate
 ```
 
+### 2. Suba o frontend
+
+Em outro terminal:
+
+```powershell
+cd C:\Users\user\Downloads\cell-store-master\cell-store-master\frontend
+npm start
+```
+
+O frontend sobe em `http://127.0.0.1:3000`.
+
+## Deploy recomendado para produção: Vercel + Railway
+
+Para uso real de loja, a combinação mais estável hoje é:
+
+- `frontend` na Vercel
+- `backend` e `PostgreSQL` na Railway
+
+### Backend na Railway
+
+- crie um novo projeto na Railway
+- adicione um serviço `PostgreSQL` no mesmo projeto
+- adicione um serviço da aplicação apontando para este repositório
+- configure o `Root Directory` do serviço da aplicação para `backend`
+- o arquivo [backend/railway.json](./backend/railway.json) já define:
+  - `preDeployCommand=python migrate.py`
+  - `startCommand=gunicorn --bind 0.0.0.0:$PORT app:app`
+  - `healthcheckPath=/api/health`
+- variáveis obrigatórias do backend:
+  - `DATABASE_URL` (a Railway injeta ao conectar o Postgres)
+  - `ADMIN_PASSWORD`
+  - `CORS_ALLOWED_ORIGINS=https://seu-frontend.vercel.app`
+- variáveis recomendadas:
+  - `ENABLE_DEBUG_DB=0`
+  - `FLASK_DEBUG=0`
+
+### Frontend na Vercel apontando para a Railway
+
+Depois que o backend da Railway estiver publicado, atualize o projeto do frontend na Vercel:
+
+- `REACT_APP_API_URL=https://seu-backend.up.railway.app/api`
+
+Em seguida, faça um novo deploy do frontend na Vercel para cortar o tráfego para a nova API.
+
 ## Deploy na Vercel
 
-Use dois projetos separados da mesma base:
+Se quiser usar a Vercel para os dois lados em ambiente de teste:
 
 ### Frontend
 
@@ -100,12 +144,12 @@ Use dois projetos separados da mesma base:
 - framework preset: `Create React App`
 - variável obrigatória:
   - `REACT_APP_API_URL=https://seu-backend.vercel.app/api`
-- o arquivo [frontend/vercel.json](C:/Users/user/Downloads/cell-store-master/cell-store-master/frontend/vercel.json) já deixa o SPA funcionando com rotas internas
+- o arquivo [frontend/vercel.json](./frontend/vercel.json) já deixa o SPA funcionando com rotas internas
 
 ### Backend
 
 - crie outro projeto Vercel apontando para a pasta `backend`
-- o arquivo [backend/vercel.json](C:/Users/user/Downloads/cell-store-master/cell-store-master/backend/vercel.json) já publica o Flask como função Python
+- o arquivo [backend/vercel.json](./backend/vercel.json) já publica o Flask como função Python
 - variáveis obrigatórias:
   - `DATABASE_URL`
   - `ADMIN_PASSWORD`
@@ -120,50 +164,6 @@ Depois do primeiro deploy do backend, rode a migração uma vez com:
 cd C:\Users\user\Downloads\cell-store-master\cell-store-master
 python -m backend.migrate
 ```
-
-## Deploy recomendado para operacao: Vercel + Railway
-
-Para uso real de loja, a combinacao mais estavel hoje e:
-
-- `frontend` na Vercel
-- `backend` e `PostgreSQL` na Railway
-
-### Backend na Railway
-
-- crie um novo projeto na Railway
-- adicione um servico `PostgreSQL` no mesmo projeto
-- adicione um servico da aplicacao apontando para este repositorio
-- configure o `Root Directory` do servico da aplicacao para `backend`
-- o arquivo [backend/railway.json](C:/Users/user/Downloads/cell-store-master/cell-store-master/backend/railway.json) ja define:
-  - `preDeployCommand=python migrate.py`
-  - `startCommand=gunicorn --bind 0.0.0.0:$PORT app:app`
-  - `healthcheckPath=/api/health`
-- variaveis obrigatorias do backend:
-  - `DATABASE_URL` (a Railway injeta ao conectar o Postgres)
-  - `ADMIN_PASSWORD`
-  - `CORS_ALLOWED_ORIGINS=https://seu-frontend.vercel.app`
-- variaveis recomendadas:
-  - `ENABLE_DEBUG_DB=0`
-  - `FLASK_DEBUG=0`
-
-### Frontend na Vercel apontando para a Railway
-
-Depois que o backend da Railway estiver publicado, atualize o projeto do frontend na Vercel:
-
-- `REACT_APP_API_URL=https://seu-backend.up.railway.app/api`
-
-Em seguida, faça um novo deploy do frontend na Vercel para cortar o trafego para a nova API.
-
-### 2. Suba o frontend
-
-Em outro terminal:
-
-```powershell
-cd C:\Users\user\Downloads\cell-store-master\cell-store-master\frontend
-npm start
-```
-
-O frontend sobe em `http://127.0.0.1:3000`.
 
 ## Build de produção
 
@@ -181,6 +181,7 @@ Depois disso, o Flask passa a servir o build estático do frontend pela pasta `f
 ```powershell
 cd C:\Users\user\Downloads\cell-store-master\cell-store-master
 python -m unittest backend.tests.test_api_flows -v
+python -m unittest backend.tests.test_migrations -v
 ```
 
 ### Frontend

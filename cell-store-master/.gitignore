@@ -17,6 +17,8 @@ backend/.env.local
 backend/.railway/
 frontend/.env.local
 frontend/.railway/
+*.log
+frontend/test-results/
 
 # OS
 .DS_Store
