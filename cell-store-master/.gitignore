@@ -1,0 +1,16 @@
+# Backend
+.venv/
+__pycache__/
+*.pyc
+database.db
+
+# Frontend
+node_modules/
+frontend/node_modules/
+build/
+frontend/build/
+.env
+
+# OS
+.DS_Store
+Thumbs.db
