@@ -2,7 +2,9 @@ export const AUTH_USER_STORAGE_KEY = '@MRImports:userLogado';
 export const AUTH_TOKEN_STORAGE_KEY = '@MRImports:authToken';
 const LEGACY_USER_ROLE_STORAGE_KEY = '@MRImports:userRole';
 
-export const API_URL = process.env.REACT_APP_API_URL || (() => {
+const configuredApiUrl = (process.env.REACT_APP_API_URL || '').trim();
+
+export const API_URL = configuredApiUrl || (() => {
   const port = window.location.port;
   if (port === '3000') return `${window.location.protocol}//${window.location.hostname}:5000/api`;
   return `${window.location.origin}/api`;

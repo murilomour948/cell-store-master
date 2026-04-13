@@ -5,7 +5,10 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from werkzeug.security import generate_password_hash
 
-from backend.migrations import run_migrations
+try:
+    from backend.migrations import run_migrations
+except ModuleNotFoundError:
+    from migrations import run_migrations
 
 
 class PGConnection:

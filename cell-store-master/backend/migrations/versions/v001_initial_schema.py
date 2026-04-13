@@ -1,4 +1,7 @@
-from backend.migrations.base import Migration
+try:
+    from backend.migrations.base import Migration
+except ModuleNotFoundError:
+    from migrations.base import Migration
 
 
 def _table_has_column(conn, table_name, column_name):

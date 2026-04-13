@@ -24,6 +24,9 @@ class _RecordingConnection:
         sql = " ".join(query.strip().split()).lower()
         self.queries.append((sql, params))
 
+        if sql in {"select pg_advisory_lock(%s)", "select pg_advisory_unlock(%s)"}:
+            return _Cursor()
+
         if sql == "select version from schema_migrations order by version":
             return _Cursor([{"version": version} for version in self.applied_versions])
 

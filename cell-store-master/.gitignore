@@ -10,6 +10,13 @@ frontend/node_modules/
 build/
 frontend/build/
 .env
+.env.local
+.railway/
+.vercel/
+backend/.env.local
+backend/.railway/
+frontend/.env.local
+frontend/.railway/
 
 # OS
 .DS_Store

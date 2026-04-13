@@ -1,4 +1,7 @@
-from backend.database import initialize_database
+try:
+    from backend.database import initialize_database
+except ModuleNotFoundError:
+    from database import initialize_database
 
 
 if __name__ == "__main__":

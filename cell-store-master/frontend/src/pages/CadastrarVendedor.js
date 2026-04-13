@@ -290,7 +290,8 @@ const CancelButton = styled.button`
 const CadastrarVendedor = () => {
   const { usuarios, userLogado } = useEstoque();
   const { showAlert } = useDialog();
-  const API_URL = process.env.REACT_APP_API_URL || (() => {
+  const configuredApiUrl = (process.env.REACT_APP_API_URL || '').trim();
+  const API_URL = configuredApiUrl || (() => {
     const port = window.location.port;
     if (port === '3000') return `${window.location.protocol}//${window.location.hostname}:5000/api`;
     return `${window.location.origin}/api`;

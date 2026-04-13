@@ -9,10 +9,22 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, request, jsonify, send_from_directory, g
 from flask_cors import CORS
 
-from backend.database import get_db_connection, initialize_database
+try:
+    from backend.database import get_db_connection, initialize_database
+except ModuleNotFoundError:
+    from database import get_db_connection, initialize_database
+
+
+def _resolve_cors_origins():
+    raw = os.environ.get('CORS_ALLOWED_ORIGINS', '').strip()
+    if not raw:
+        return "*"
+    origins = [item.strip() for item in raw.split(',') if item.strip()]
+    return origins or "*"
+
 
 app = Flask(__name__, static_folder='../frontend/build')
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": _resolve_cors_origins()}})
 
 global_init_err = "None"
 try:
@@ -115,9 +127,9 @@ def serve():
         return send_from_directory(app.static_folder, 'index.html')
     return jsonify({
         "status": "online",
-        "message": "Backend MR ERP em Python está rodando no Vercel (PostgreSQL)!",
+        "message": "Backend MR ERP em Python esta rodando.",
         "api_docs": "/api/...",
-        "frontend_note": "O frontend React geralmente roda na porta 3000 (npm start). Se desejar rodar por aqui, execute 'npm run build' primeiro."
+        "frontend_note": "O frontend React geralmente roda separado do backend. Se desejar servi-lo por aqui, execute 'npm run build' primeiro."
     })
 
 @app.route('/<path:path>')
@@ -125,6 +137,10 @@ def static_proxy(path):
     if os.path.exists(os.path.join(app.static_folder, path)):
         return send_from_directory(app.static_folder, path)
     return serve()
+
+@app.route('/api/health', methods=['GET'])
+def healthcheck():
+    return jsonify({"status": "ok"}), 200
 
 @app.route('/api/login', methods=['POST'])
 def login():
