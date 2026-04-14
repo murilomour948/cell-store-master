@@ -4,11 +4,31 @@ import { useEstoque } from '../contexts/EstoqueContext';
 import { useDialog } from '../contexts/DialogContext';
 
 // --- FUNÇÕES AUXILIARES ---
-const parseNum = (v) => Number(String(v).replace(/\D/g, "")) || 0;
-const formatMoney = (v) => new Intl.NumberFormat('pt-BR', { 
-  style: 'currency', 
-  currency: 'BRL' 
-}).format(parseNum(v) / 100);
+const parseDigitsToCents = (v) => Number(String(v).replace(/\D/g, "")) || 0;
+const parseMoneyToReais = (value) => {
+  if (value === null || value === undefined) return 0;
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+
+  const raw = String(value).trim();
+  if (!raw) return 0;
+
+  if (raw.includes('R$') || raw.includes(',')) {
+    const normalized = raw.replace(/[R$\s.]/g, "").replace(",", ".");
+    return Number(normalized) || 0;
+  }
+
+  if (/^\d+(\.\d+)?$/.test(raw)) {
+    return Number(raw) || 0;
+  }
+
+  const digits = raw.replace(/\D/g, "");
+  if (!digits) return 0;
+  return (Number(digits) || 0) / 100;
+};
+const formatMoney = (v) => new Intl.NumberFormat('pt-BR', {
+  style: 'currency',
+  currency: 'BRL'
+}).format(parseDigitsToCents(v) / 100);
 
 // --- ESTILOS PREMIUM ---
 const PageContainer = styled.div`padding: 40px; color: #fff; background-color: #0d0d0d; min-height: 100vh; @media (max-width: 768px) { padding: 16px; } @media print { background: #fff; color: #000; padding: 0; }`;
@@ -156,8 +176,8 @@ const Estoque = () => {
   }, [form.imei, produtos, editId]);
 
   const currentMargin = useMemo(() => {
-    const v = parseNum(form.preco);
-    const c = parseNum(form.precoCusto);
+    const v = parseMoneyToReais(form.preco);
+    const c = parseMoneyToReais(form.precoCusto);
     return c > 0 ? (((v - c) / c) * 100).toFixed(1) : 0;
   }, [form.preco, form.precoCusto]);
 
@@ -167,15 +187,15 @@ const Estoque = () => {
       .filter(p => fStatus === 'Todos' || p.estado === fStatus)
       .filter(p => {
         if (!isAdmin) return true;
-        const lucroR = (parseNum(p.preco) - parseNum(p.precoCusto)) / 100;
-        const custo = parseNum(p.precoCusto);
-        const margemP = custo > 0 ? (lucroR / (custo / 100)) * 100 : 0;
+        const lucroR = parseMoneyToReais(p.preco || p.precoVenda) - parseMoneyToReais(p.precoCusto);
+        const custo = parseMoneyToReais(p.precoCusto);
+        const margemP = custo > 0 ? (lucroR / custo) * 100 : 0;
         if (fLucro === 'alta') return lucroR >= 500;
         if (fLucro === 'baixa_margem') return margemP < 10;
         return true;
       })
       .sort((a, b) => {
-        if (order === 'preco') return parseNum(b.preco) - parseNum(a.preco);
+        if (order === 'preco') return parseMoneyToReais(b.preco || b.precoVenda) - parseMoneyToReais(a.preco || a.precoVenda);
         if (order === 'parados') return new Date(a.dataEntrada) - new Date(b.dataEntrada);
         return new Date(b.id || 0) - new Date(a.id || 0);
       });
@@ -199,11 +219,11 @@ const Estoque = () => {
   }, [search, fStatus, fLucro, order]);
 
   const stats = useMemo(() => {
-    const totalVenda = listaExibida.reduce((acc, p) => acc + parseNum(p.preco), 0);
-    const totalCusto = listaExibida.reduce((acc, p) => acc + parseNum(p.precoCusto), 0);
+    const totalVenda = listaExibida.reduce((acc, p) => acc + parseMoneyToReais(p.preco || p.precoVenda), 0);
+    const totalCusto = listaExibida.reduce((acc, p) => acc + parseMoneyToReais(p.precoCusto), 0);
     return { 
-      invest: totalCusto / 100, 
-      lucro: (totalVenda - totalCusto) / 100, 
+      invest: totalCusto, 
+      lucro: (totalVenda - totalCusto), 
       mMedia: totalCusto > 0 ? (((totalVenda - totalCusto) / totalCusto) * 100).toFixed(1) : 0 
     };
   }, [listaExibida]);
@@ -288,7 +308,7 @@ const Estoque = () => {
           <tbody>
             {currentItems.map(p => {
               const aging = Math.floor((new Date() - new Date(p.dataEntrada || p.id)) / 86400000);
-              const lucroR = (parseNum(p.preco) - parseNum(p.precoCusto)) / 100;
+              const lucroR = parseMoneyToReais(p.preco || p.precoVenda) - parseMoneyToReais(p.precoCusto);
               return (
                 <tr key={p.id}>
                   <Td>
@@ -306,8 +326,8 @@ const Estoque = () => {
                   <Td><strong>{p.modelo}</strong><br/><small style={{color:'#666'}}>{p.capacidade} · {p.cor}</small></Td>
                   <Td><AgingBadge status={aging > 30 ? 'critico' : aging > 15 ? 'atencao' : 'giro'}>{aging} Dias</AgingBadge></Td>
                   <Td style={{fontFamily:'monospace', color: '#888'}}>{p.imei}</Td>
-                  <Td style={{fontWeight:'bold', color: '#ffffff'}}>{p.preco}</Td>
-                  {isAdmin && <Td style={{color: lucroR >= 500 ? '#4caf50' : '#fff', fontWeight:'bold'}}>{formatMoney(lucroR * 100)}</Td>}
+                  <Td style={{fontWeight:'bold', color: '#ffffff'}}>{p.preco || p.precoVenda || 'R$ 0,00'}</Td>
+                  {isAdmin && <Td style={{color: lucroR >= 500 ? '#4caf50' : '#fff', fontWeight:'bold'}}>{lucroR.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</Td>}
                   <Td>
                     <ActionBtn onClick={() => { setEditId(p.id); setForm(p); setModal(true); }}>Editar</ActionBtn>
                     <ActionBtn c="#ff4d4d" onClick={async () => { 
