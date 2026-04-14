@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "create-react-app",
+  "installCommand": "cd cell-store-master/frontend && npm install",
+  "buildCommand": "cd cell-store-master/frontend && npm run build",
+  "outputDirectory": "cell-store-master/frontend/build",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
