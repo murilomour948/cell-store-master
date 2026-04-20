@@ -310,6 +310,20 @@ def _alias_row_keys(row, *camel_case_keys):
             normalized.pop(lower_key, None)
     return normalized
 
+
+def _normalize_accessory_payload(data):
+    preco_venda = get_valid_price(data)
+    preco_custo = data.get('precoCusto', data.get('custo', '0'))
+    return {
+        'id': data.get('id', ''),
+        'nome': data.get('nome', ''),
+        'quantidade': _parse_int(data.get('quantidade'), 0),
+        'precoCusto': str(preco_custo or '0'),
+        'precoVenda': str(preco_venda or '0'),
+        'categoria': data.get('categoria', ''),
+        'estoqueMinimo': _parse_int(data.get('estoqueMinimo', data.get('estoqueminimo')), 2),
+    }
+
 def build_sale_record(item_row, payload, item_type=None):
     normalized_item = _alias_row_keys(
         item_row or {},
@@ -679,22 +693,23 @@ def handle_acessorios():
     conn = get_db_connection()
     if request.method == 'POST':
         data = request.json
-        preco_venda = get_valid_price(data)
-        conn.execute("INSERT INTO acessorios (id, nome, quantidade, precoCusto, precoVenda, categoria) VALUES (%s, %s, %s, %s, %s, %s)",
-                     (data.get('id', ''), data.get('nome', ''), data.get('quantidade', 0), data.get('precoCusto', '0'), preco_venda, data.get('categoria', '')))
+        item = _normalize_accessory_payload(data)
+        conn.execute("INSERT INTO acessorios (id, nome, quantidade, precoCusto, precoVenda, categoria, estoqueMinimo) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                     (item.get('id', ''), item.get('nome', ''), item.get('quantidade', 0), item.get('precoCusto', '0'), item.get('precoVenda', '0'), item.get('categoria', ''), item.get('estoqueMinimo', 2)))
         conn.commit()
         conn.close()
-        return jsonify({"success": True})
+        return jsonify({"success": True, "item": item})
     
     rows = conn.execute("SELECT * FROM acessorios").fetchall()
     conn.close()
     result = []
     for row in rows:
-        d = _alias_row_keys(row, 'precoVenda', 'precoCusto')
+        d = _alias_row_keys(row, 'precoVenda', 'precoCusto', 'estoqueMinimo')
         preco_venda = d.get('precoVenda') or d.get('preco') or d.get('valorCobrado') or '0'
         d['precoVenda'] = preco_venda
         d['preco'] = preco_venda
         d['valorCobrado'] = preco_venda
+        d['estoqueMinimo'] = _parse_int(d.get('estoqueMinimo', d.get('estoqueminimo')), 2)
         result.append(d)
     return jsonify(result)
 
@@ -704,14 +719,16 @@ def handle_acessorio(id):
     conn = get_db_connection()
     if request.method == 'DELETE':
         conn.execute("DELETE FROM acessorios WHERE id = %s", (id,))
+        response_payload = {"success": True}
     elif request.method == 'PUT':
         data = request.json
-        preco_venda = get_valid_price(data)
-        conn.execute("UPDATE acessorios SET nome=%s, quantidade=%s, precoCusto=%s, precoVenda=%s, categoria=%s WHERE id=%s",
-                     (data.get('nome', ''), data.get('quantidade', 0), data.get('precoCusto', '0'), preco_venda, data.get('categoria', ''), id))
+        item = _normalize_accessory_payload({ **data, 'id': id })
+        conn.execute("UPDATE acessorios SET nome=%s, quantidade=%s, precoCusto=%s, precoVenda=%s, categoria=%s, estoqueMinimo=%s WHERE id=%s",
+                     (item.get('nome', ''), item.get('quantidade', 0), item.get('precoCusto', '0'), item.get('precoVenda', '0'), item.get('categoria', ''), item.get('estoqueMinimo', 2), id))
+        response_payload = {"success": True, "item": item}
     conn.commit()
     conn.close()
-    return jsonify({"success": True})
+    return jsonify(response_payload)
 
 @app.route('/api/scooters', methods=['GET', 'POST'])
 @require_auth

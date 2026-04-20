@@ -7,6 +7,7 @@ import {
   clearAuthSession,
   formatarCpf,
   hydrateStoredUser,
+  normalizarAcessorio,
   normalizarAssistencia,
   normalizarCpf,
   normalizarChecklistAssistencia,
@@ -313,22 +314,35 @@ export const EstoqueProvider = ({ children }) => {
   // --- ACESSÓRIOS ---
   const adicionarAcessorio = async (novo) => {
     const novoAcessorio = { ...novo, id: Date.now().toString() };
-    await apiFetch(`/acessorios`, {
+    const response = await apiFetch(`/acessorios`, {
       method: 'POST',
       body: JSON.stringify(novoAcessorio)
     });
-    setAcessorios(prev => [...prev, novoAcessorio]);
+    if (!response.ok) {
+      await showAlert('Erro ao salvar o acessório no servidor.', 'error', 'Falha no Servidor');
+      return false;
+    }
+    const responseData = await response.json().catch(() => ({}));
+    const acessorioSalvo = normalizarAcessorio(responseData?.item || novoAcessorio);
+    setAcessorios(prev => [...prev, acessorioSalvo]);
     registrarLog('ACESSORIO', `${novo.nome}`, 'ADD');
     return true;
   };
 
   const editarAcessorio = async (id, dados) => {
-    await apiFetch(`/acessorios/${id}`, {
+    const response = await apiFetch(`/acessorios/${id}`, {
       method: 'PUT',
       body: JSON.stringify(dados)
     });
-    setAcessorios(prev => prev.map(a => a.id === id ? { ...a, ...dados } : a));
+    if (!response.ok) {
+      await showAlert('Erro ao atualizar o acessório no servidor.', 'error', 'Falha no Servidor');
+      return false;
+    }
+    const responseData = await response.json().catch(() => ({}));
+    const acessorioAtualizado = normalizarAcessorio(responseData?.item || { ...dados, id });
+    setAcessorios(prev => prev.map(a => a.id === id ? acessorioAtualizado : a));
     registrarLog('EDIT ACESSORIO', `${dados.nome}`, 'EDIT');
+    return true;
   };
 
   const removerAcessorio = async (id) => {

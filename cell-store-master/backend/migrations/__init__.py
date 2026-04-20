@@ -3,15 +3,18 @@ import time
 try:
     from backend.migrations.versions.v001_initial_schema import MIGRATION as V001_INITIAL_SCHEMA
     from backend.migrations.versions.v002_produtos_metadata import MIGRATION as V002_PRODUTOS_METADATA
+    from backend.migrations.versions.v003_acessorios_estoque_minimo import MIGRATION as V003_ACESSORIOS_ESTOQUE_MINIMO
 except ModuleNotFoundError:
     from migrations.versions.v001_initial_schema import MIGRATION as V001_INITIAL_SCHEMA
     from migrations.versions.v002_produtos_metadata import MIGRATION as V002_PRODUTOS_METADATA
+    from migrations.versions.v003_acessorios_estoque_minimo import MIGRATION as V003_ACESSORIOS_ESTOQUE_MINIMO
 
 MIGRATION_LOCK_ID = 424242
 
 MIGRATIONS = [
     V001_INITIAL_SCHEMA,
     V002_PRODUTOS_METADATA,
+    V003_ACESSORIOS_ESTOQUE_MINIMO,
 ]
 
 

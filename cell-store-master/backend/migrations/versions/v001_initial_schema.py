@@ -45,7 +45,8 @@ def apply(conn):
             quantidade INTEGER,
             precoCusto TEXT,
             precoVenda TEXT,
-            categoria TEXT
+            categoria TEXT,
+            estoqueMinimo INTEGER DEFAULT 2
         )
         '''
     )
@@ -214,6 +215,7 @@ def apply(conn):
         ("clientes", "cpf", "ALTER TABLE clientes ADD COLUMN cpf TEXT"),
         ("clientes", "origem", "ALTER TABLE clientes ADD COLUMN origem TEXT"),
         ("clientes", "endereco", "ALTER TABLE clientes ADD COLUMN endereco TEXT"),
+        ("acessorios", "estoqueMinimo", "ALTER TABLE acessorios ADD COLUMN estoqueMinimo INTEGER DEFAULT 2"),
         ("scooters", "imagem", "ALTER TABLE scooters ADD COLUMN imagem TEXT"),
         ("scooters", "potencia", "ALTER TABLE scooters ADD COLUMN potencia TEXT"),
         ("vendas", "imagem", "ALTER TABLE vendas ADD COLUMN imagem TEXT"),

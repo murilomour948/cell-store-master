@@ -70,6 +70,10 @@ export const toNum = (val) => {
   return clean === '' ? 0 : Number(clean);
 };
 
+export const formatarMoedaDisplay = (val) => (
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(toNum(val))
+);
+
 const CHECKLIST_ASSISTENCIA_PADRAO = {
   telaRiscada: false,
   carcacaAmassada: false,
@@ -104,6 +108,25 @@ export const normalizarFornecedor = (item = {}) => ({
   categoria: String(item?.categoria || '').trim(),
   telefone: String(item?.telefone || '').trim(),
 });
+
+export const normalizarAcessorio = (item = {}) => {
+  const precoVenda = item?.precoVenda ?? item?.preco ?? item?.valorCobrado ?? '';
+  const precoCusto = item?.precoCusto ?? item?.custo ?? '';
+
+  return {
+    ...item,
+    id: item?.id != null ? String(item.id) : '',
+    nome: String(item?.nome || '').toUpperCase(),
+    categoria: String(item?.categoria || '').trim(),
+    quantidade: Number(item?.quantidade || 0),
+    estoqueMinimo: Number(item?.estoqueMinimo || item?.estoqueminimo || 2),
+    precoCusto: precoCusto === '' ? '' : formatarMoedaDisplay(precoCusto),
+    custo: precoCusto === '' ? '' : formatarMoedaDisplay(precoCusto),
+    precoVenda: precoVenda === '' ? '' : formatarMoedaDisplay(precoVenda),
+    preco: precoVenda === '' ? '' : formatarMoedaDisplay(precoVenda),
+    valorCobrado: precoVenda === '' ? '' : formatarMoedaDisplay(precoVenda),
+  };
+};
 
 export const normalizarProduto = (item = {}) => {
   const condicao = item?.condicao ?? item?.estado ?? '';

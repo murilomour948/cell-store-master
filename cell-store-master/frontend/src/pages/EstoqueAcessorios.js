@@ -116,12 +116,13 @@ const EstoqueAcessorios = () => {
       itemFinal.precoCusto = original.precoCusto; 
     }
 
-    if (editId) {
-      await editarAcessorio(editId, itemFinal);
-      setEditId(null);
-    } else {
-      await adicionarAcessorio(itemFinal);
-    }
+    const saved = editId
+      ? await editarAcessorio(editId, itemFinal)
+      : await adicionarAcessorio(itemFinal);
+
+    if (!saved) return;
+
+    setEditId(null);
     setForm({ nome: '', categoria: 'Capinha', precoCusto: '', precoVenda: '', quantidade: 1, estoqueMinimo: 2 });
     setIsModalOpen(false);
   };
@@ -234,7 +235,17 @@ const EstoqueAcessorios = () => {
                 <Td style={{color: '#4caf50', fontWeight: 'bold'}}>{item.precoVenda || item.preco}</Td>
                 <Td><EstoqueBadge qtd={item.quantidade} min={item.estoqueMinimo}>{item.quantidade} un. {Number(item.quantidade) <= Number(item.estoqueMinimo) && '⚠️'}</EstoqueBadge></Td>
                 <Td>
-                  <ActionBtn c="#ffffff" onClick={() => { setForm({ ...item, precoCusto: item.precoCusto || item.custo, precoVenda: item.precoVenda || item.preco }); setEditId(item.id); setIsModalOpen(true); }}>Editar</ActionBtn>
+                  <ActionBtn c="#ffffff" onClick={() => {
+                    setForm({
+                      ...item,
+                      quantidade: Number(item.quantidade || 0),
+                      estoqueMinimo: Number(item.estoqueMinimo || 2),
+                      precoCusto: item.precoCusto || item.custo || '',
+                      precoVenda: item.precoVenda || item.preco || ''
+                    });
+                    setEditId(item.id);
+                    setIsModalOpen(true);
+                  }}>Editar</ActionBtn>
                   {isAdmin && <ActionBtn c="#ff4d4d" onClick={() => excluir(item.id)}>X</ActionBtn>}
                 </Td>
               </tr>

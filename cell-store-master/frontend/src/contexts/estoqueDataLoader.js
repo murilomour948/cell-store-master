@@ -1,5 +1,6 @@
 import {
   normalizarAssistencia,
+  normalizarAcessorio,
   normalizarCliente,
   normalizarFornecedor,
   normalizarLog,
@@ -35,7 +36,7 @@ export const carregarDadosIniciais = async ({ authToken, userLogado, apiFetch })
 
   return {
     produtos: Array.isArray(produtos) ? produtos.map(normalizarProduto) : [],
-    acessorios: Array.isArray(acessorios) ? acessorios : [],
+    acessorios: Array.isArray(acessorios) ? acessorios.map(normalizarAcessorio) : [],
     vendas: sortByTimestampDesc(Array.isArray(vendas) ? vendas.map(normalizarVenda) : []),
     clientes: Array.isArray(clientes) ? clientes.map(normalizarCliente) : [],
     scooters: Array.isArray(scooters) ? scooters.map(normalizarScooter) : [],
