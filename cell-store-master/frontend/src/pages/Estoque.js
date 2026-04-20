@@ -221,10 +221,10 @@ const Estoque = () => {
   const stats = useMemo(() => {
     const totalVenda = listaExibida.reduce((acc, p) => acc + parseMoneyToReais(p.preco || p.precoVenda), 0);
     const totalCusto = listaExibida.reduce((acc, p) => acc + parseMoneyToReais(p.precoCusto), 0);
-    return { 
-      invest: totalCusto, 
-      lucro: (totalVenda - totalCusto), 
-      mMedia: totalCusto > 0 ? (((totalVenda - totalCusto) / totalCusto) * 100).toFixed(1) : 0 
+    return {
+      invest: totalCusto,
+      lucro: (totalVenda - totalCusto),
+      mMedia: totalCusto > 0 ? (((totalVenda - totalCusto) / totalCusto) * 100).toFixed(1) : 0
     };
   }, [listaExibida]);
 
@@ -247,9 +247,10 @@ const Estoque = () => {
     URL.revokeObjectURL(a.href);
   };
 
-  const salvar = () => {
+  const salvar = async () => {
     const payload = { ...form, estado: form.estado || 'Novo', dataEntrada: editId ? form.dataEntrada : new Date().toISOString() };
-    if(editId ? editarProduto(editId, payload) : adicionarProduto(payload)) setModal(false);
+    const saved = await (editId ? editarProduto(editId, payload) : adicionarProduto(payload));
+    if (saved) setModal(false);
   };
 
   return (

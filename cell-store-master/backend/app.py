@@ -587,8 +587,30 @@ def handle_produtos():
     if request.method == 'POST':
         data = request.json
         preco_venda = get_valid_price(data)
-        conn.execute("INSERT INTO produtos (id, modelo, imei, precoCusto, precoVenda, dataEntrada, cor, condicao, imagem) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                     (data.get('id', ''), data.get('modelo', ''), data.get('imei', ''), data.get('precoCusto', '0'), preco_venda, data.get('dataEntrada', ''), data.get('cor', ''), data.get('condicao', ''), data.get('imagem', '')))
+        conn.execute(
+            """
+            INSERT INTO produtos (
+                id, modelo, imei, capacidade, precoCusto, precoVenda, dataEntrada,
+                cor, bateria, garantia, origem, fornecedor, condicao, imagem
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """,
+            (
+                data.get('id', ''),
+                data.get('modelo', ''),
+                data.get('imei', ''),
+                data.get('capacidade', ''),
+                data.get('precoCusto', '0'),
+                preco_venda,
+                data.get('dataEntrada', ''),
+                data.get('cor', ''),
+                data.get('bateria', ''),
+                data.get('garantia', ''),
+                data.get('origem', ''),
+                data.get('fornecedor', ''),
+                data.get('condicao', ''),
+                data.get('imagem', '')
+            )
+        )
         conn.commit()
         conn.close()
         return jsonify({"success": True})
@@ -614,8 +636,39 @@ def handle_produto(id):
     elif request.method == 'PUT':
         data = request.json
         preco_venda = get_valid_price(data)
-        conn.execute("UPDATE produtos SET modelo=%s, imei=%s, precoCusto=%s, precoVenda=%s, cor=%s, condicao=%s, imagem=%s WHERE id=%s",
-                     (data.get('modelo', ''), data.get('imei', ''), data.get('precoCusto', '0'), preco_venda, data.get('cor', ''), data.get('condicao', ''), data.get('imagem', ''), id))
+        conn.execute(
+            """
+            UPDATE produtos SET
+                modelo=%s,
+                imei=%s,
+                capacidade=%s,
+                precoCusto=%s,
+                precoVenda=%s,
+                cor=%s,
+                bateria=%s,
+                garantia=%s,
+                origem=%s,
+                fornecedor=%s,
+                condicao=%s,
+                imagem=%s
+            WHERE id=%s
+            """,
+            (
+                data.get('modelo', ''),
+                data.get('imei', ''),
+                data.get('capacidade', ''),
+                data.get('precoCusto', '0'),
+                preco_venda,
+                data.get('cor', ''),
+                data.get('bateria', ''),
+                data.get('garantia', ''),
+                data.get('origem', ''),
+                data.get('fornecedor', ''),
+                data.get('condicao', ''),
+                data.get('imagem', ''),
+                id
+            )
+        )
     conn.commit()
     conn.close()
     return jsonify({"success": True})

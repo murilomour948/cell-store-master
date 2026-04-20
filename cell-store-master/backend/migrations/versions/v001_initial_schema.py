@@ -23,10 +23,15 @@ def apply(conn):
             id TEXT PRIMARY KEY,
             modelo TEXT,
             imei TEXT,
+            capacidade TEXT,
             precoCusto TEXT,
             precoVenda TEXT,
             dataEntrada TEXT,
             cor TEXT,
+            bateria TEXT,
+            garantia TEXT,
+            origem TEXT,
+            fornecedor TEXT,
             condicao TEXT,
             imagem TEXT
         )
@@ -225,6 +230,11 @@ def apply(conn):
         ("vendas", "taxaPagamentoPercentual", "ALTER TABLE vendas ADD COLUMN taxaPagamentoPercentual REAL"),
         ("vendas", "observacao", "ALTER TABLE vendas ADD COLUMN observacao TEXT"),
         ("logs", "usuario", "ALTER TABLE logs ADD COLUMN usuario TEXT"),
+        ("produtos", "capacidade", "ALTER TABLE produtos ADD COLUMN capacidade TEXT"),
+        ("produtos", "bateria", "ALTER TABLE produtos ADD COLUMN bateria TEXT"),
+        ("produtos", "garantia", "ALTER TABLE produtos ADD COLUMN garantia TEXT"),
+        ("produtos", "origem", "ALTER TABLE produtos ADD COLUMN origem TEXT"),
+        ("produtos", "fornecedor", "ALTER TABLE produtos ADD COLUMN fornecedor TEXT"),
         ("produtos", "imagem", "ALTER TABLE produtos ADD COLUMN imagem TEXT"),
     ]
 

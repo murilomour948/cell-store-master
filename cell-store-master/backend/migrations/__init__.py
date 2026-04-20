@@ -2,13 +2,16 @@ import time
 
 try:
     from backend.migrations.versions.v001_initial_schema import MIGRATION as V001_INITIAL_SCHEMA
+    from backend.migrations.versions.v002_produtos_metadata import MIGRATION as V002_PRODUTOS_METADATA
 except ModuleNotFoundError:
     from migrations.versions.v001_initial_schema import MIGRATION as V001_INITIAL_SCHEMA
+    from migrations.versions.v002_produtos_metadata import MIGRATION as V002_PRODUTOS_METADATA
 
 MIGRATION_LOCK_ID = 424242
 
 MIGRATIONS = [
     V001_INITIAL_SCHEMA,
+    V002_PRODUTOS_METADATA,
 ]
 
 

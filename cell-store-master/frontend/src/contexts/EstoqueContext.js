@@ -272,10 +272,14 @@ export const EstoqueProvider = ({ children }) => {
       condicao: novoProduto.condicao || novoProduto.estado || '',
       estado: novoProduto.estado || novoProduto.condicao || 'Novo'
     };
-    await apiFetch(`/produtos`, {
+    const response = await apiFetch(`/produtos`, {
       method: 'POST',
       body: JSON.stringify(payload)
     });
+    if (!response.ok) {
+      await showAlert('Erro ao salvar o produto no servidor.', 'error', 'Falha no Servidor');
+      return false;
+    }
     setProdutos(prev => [...prev, payload]);
     registrarLog('PRODUTO', `${novo.modelo}`, 'ADD');
     return true;
@@ -293,12 +297,17 @@ export const EstoqueProvider = ({ children }) => {
       condicao: dados?.condicao || dados?.estado || '',
       estado: dados?.estado || dados?.condicao || 'Novo'
     };
-    await apiFetch(`/produtos/${id}`, {
+    const response = await apiFetch(`/produtos/${id}`, {
       method: 'PUT',
       body: JSON.stringify(payload)
     });
+    if (!response.ok) {
+      await showAlert('Erro ao atualizar o produto no servidor.', 'error', 'Falha no Servidor');
+      return false;
+    }
     setProdutos(prev => prev.map(p => p.id === id ? { ...p, ...payload } : p));
     registrarLog('EDICAO', `${payload.modelo}`, 'EDIT');
+    return true;
   };
 
   // --- ACESSÓRIOS ---
