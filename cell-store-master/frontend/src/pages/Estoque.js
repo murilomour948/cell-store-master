@@ -330,7 +330,22 @@ const Estoque = () => {
                   <Td style={{fontWeight:'bold', color: '#ffffff'}}>{p.preco || p.precoVenda || 'R$ 0,00'}</Td>
                   {isAdmin && <Td style={{color: lucroR >= 500 ? '#4caf50' : '#fff', fontWeight:'bold'}}>{lucroR.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</Td>}
                   <Td>
-                    <ActionBtn onClick={() => { setEditId(p.id); setForm(p); setModal(true); }}>Editar</ActionBtn>
+                    <ActionBtn onClick={() => {
+                      setEditId(p.id);
+                      setForm({
+                        ...p,
+                        estado: p.estado || p.condicao || 'Novo',
+                        precoCusto: p.precoCusto || '',
+                        preco: p.preco || p.precoVenda || '',
+                        bateria: p.bateria || '',
+                        garantia: p.garantia || '',
+                        origem: p.origem || 'Anatel',
+                        fornecedor: p.fornecedor || '',
+                        imagem: p.imagem || '',
+                        dataEntrada: p.dataEntrada || ''
+                      });
+                      setModal(true);
+                    }}>Editar</ActionBtn>
                     <ActionBtn c="#ff4d4d" onClick={async () => { 
                       if (await showConfirm(`Remover o ${p.modelo} permanentemente do estoque?`, 'Excluir Produto', 'Remover', '#ff4d4d')) {
                         removerProduto(p.id);

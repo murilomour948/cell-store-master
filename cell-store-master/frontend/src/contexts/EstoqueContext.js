@@ -12,6 +12,7 @@ import {
   normalizarCpf,
   normalizarChecklistAssistencia,
   normalizarFornecedor,
+  normalizarProduto,
   persistAuthSession,
   persistStoredUser,
   sortByNomeAsc,
@@ -281,7 +282,9 @@ export const EstoqueProvider = ({ children }) => {
       await showAlert('Erro ao salvar o produto no servidor.', 'error', 'Falha no Servidor');
       return false;
     }
-    setProdutos(prev => [...prev, payload]);
+    const responseData = await response.json().catch(() => ({}));
+    const produtoSalvo = normalizarProduto(responseData?.item || payload);
+    setProdutos(prev => [...prev, produtoSalvo]);
     registrarLog('PRODUTO', `${novo.modelo}`, 'ADD');
     return true;
   };
@@ -306,7 +309,9 @@ export const EstoqueProvider = ({ children }) => {
       await showAlert('Erro ao atualizar o produto no servidor.', 'error', 'Falha no Servidor');
       return false;
     }
-    setProdutos(prev => prev.map(p => p.id === id ? { ...p, ...payload } : p));
+    const responseData = await response.json().catch(() => ({}));
+    const produtoAtualizado = normalizarProduto(responseData?.item || { ...payload, id });
+    setProdutos(prev => prev.map(p => p.id === id ? produtoAtualizado : p));
     registrarLog('EDICAO', `${payload.modelo}`, 'EDIT');
     return true;
   };

@@ -129,9 +129,29 @@ export const normalizarAcessorio = (item = {}) => {
 };
 
 export const normalizarProduto = (item = {}) => {
+  const precoVenda = item?.precoVenda ?? item?.preco ?? item?.valorCobrado ?? '';
+  const precoCusto = item?.precoCusto ?? item?.precocusto ?? '';
   const condicao = item?.condicao ?? item?.estado ?? '';
   const estado = item?.estado ?? item?.condicao ?? 'Novo';
-  return { ...item, estado, condicao };
+  return {
+    ...item,
+    id: item?.id != null ? String(item.id) : '',
+    modelo: String(item?.modelo || '').toUpperCase(),
+    cor: String(item?.cor || '').toUpperCase(),
+    fornecedor: String(item?.fornecedor || '').toUpperCase(),
+    estado,
+    condicao,
+    precoCusto: precoCusto === '' ? '' : formatarMoedaDisplay(precoCusto),
+    precoVenda: precoVenda === '' ? '' : formatarMoedaDisplay(precoVenda),
+    preco: precoVenda === '' ? '' : formatarMoedaDisplay(precoVenda),
+    valorCobrado: precoVenda === '' ? '' : formatarMoedaDisplay(precoVenda),
+    bateria: String(item?.bateria || ''),
+    garantia: String(item?.garantia || ''),
+    origem: String(item?.origem || item?.Origem || ''),
+    capacidade: String(item?.capacidade || ''),
+    dataEntrada: item?.dataEntrada ?? item?.dataentrada ?? '',
+    imagem: item?.imagem || '',
+  };
 };
 
 export const normalizarVenda = (item = {}) => ({

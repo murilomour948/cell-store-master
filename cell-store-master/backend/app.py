@@ -324,6 +324,28 @@ def _normalize_accessory_payload(data):
         'estoqueMinimo': _parse_int(data.get('estoqueMinimo', data.get('estoqueminimo')), 2),
     }
 
+
+def _normalize_product_payload(data):
+    preco_venda = get_valid_price(data)
+    preco_custo = data.get('precoCusto', data.get('precocusto', '0'))
+    condicao = data.get('condicao', data.get('estado', ''))
+    return {
+        'id': data.get('id', ''),
+        'modelo': data.get('modelo', ''),
+        'imei': data.get('imei', ''),
+        'capacidade': data.get('capacidade', ''),
+        'precoCusto': str(preco_custo or '0'),
+        'precoVenda': str(preco_venda or '0'),
+        'dataEntrada': data.get('dataEntrada', data.get('dataentrada', '')),
+        'cor': data.get('cor', ''),
+        'bateria': data.get('bateria', ''),
+        'garantia': data.get('garantia', ''),
+        'origem': data.get('origem', ''),
+        'fornecedor': data.get('fornecedor', ''),
+        'condicao': condicao,
+        'imagem': data.get('imagem', ''),
+    }
+
 def build_sale_record(item_row, payload, item_type=None):
     normalized_item = _alias_row_keys(
         item_row or {},
@@ -600,7 +622,7 @@ def handle_produtos():
     conn = get_db_connection()
     if request.method == 'POST':
         data = request.json
-        preco_venda = get_valid_price(data)
+        item = _normalize_product_payload(data)
         conn.execute(
             """
             INSERT INTO produtos (
@@ -609,25 +631,25 @@ def handle_produtos():
             ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (
-                data.get('id', ''),
-                data.get('modelo', ''),
-                data.get('imei', ''),
-                data.get('capacidade', ''),
-                data.get('precoCusto', '0'),
-                preco_venda,
-                data.get('dataEntrada', ''),
-                data.get('cor', ''),
-                data.get('bateria', ''),
-                data.get('garantia', ''),
-                data.get('origem', ''),
-                data.get('fornecedor', ''),
-                data.get('condicao', ''),
-                data.get('imagem', '')
+                item.get('id', ''),
+                item.get('modelo', ''),
+                item.get('imei', ''),
+                item.get('capacidade', ''),
+                item.get('precoCusto', '0'),
+                item.get('precoVenda', '0'),
+                item.get('dataEntrada', ''),
+                item.get('cor', ''),
+                item.get('bateria', ''),
+                item.get('garantia', ''),
+                item.get('origem', ''),
+                item.get('fornecedor', ''),
+                item.get('condicao', ''),
+                item.get('imagem', '')
             )
         )
         conn.commit()
         conn.close()
-        return jsonify({"success": True})
+        return jsonify({"success": True, "item": item})
     
     rows = conn.execute("SELECT * FROM produtos").fetchall()
     conn.close()
@@ -647,9 +669,10 @@ def handle_produto(id):
     conn = get_db_connection()
     if request.method == 'DELETE':
         conn.execute("DELETE FROM produtos WHERE id = %s", (id,))
+        response_payload = {"success": True}
     elif request.method == 'PUT':
         data = request.json
-        preco_venda = get_valid_price(data)
+        item = _normalize_product_payload({ **data, 'id': id })
         conn.execute(
             """
             UPDATE produtos SET
@@ -668,24 +691,25 @@ def handle_produto(id):
             WHERE id=%s
             """,
             (
-                data.get('modelo', ''),
-                data.get('imei', ''),
-                data.get('capacidade', ''),
-                data.get('precoCusto', '0'),
-                preco_venda,
-                data.get('cor', ''),
-                data.get('bateria', ''),
-                data.get('garantia', ''),
-                data.get('origem', ''),
-                data.get('fornecedor', ''),
-                data.get('condicao', ''),
-                data.get('imagem', ''),
+                item.get('modelo', ''),
+                item.get('imei', ''),
+                item.get('capacidade', ''),
+                item.get('precoCusto', '0'),
+                item.get('precoVenda', '0'),
+                item.get('cor', ''),
+                item.get('bateria', ''),
+                item.get('garantia', ''),
+                item.get('origem', ''),
+                item.get('fornecedor', ''),
+                item.get('condicao', ''),
+                item.get('imagem', ''),
                 id
             )
         )
+        response_payload = {"success": True, "item": item}
     conn.commit()
     conn.close()
-    return jsonify({"success": True})
+    return jsonify(response_payload)
 
 @app.route('/api/acessorios', methods=['GET', 'POST'])
 @require_auth
