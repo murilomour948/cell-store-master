@@ -140,7 +140,10 @@ const Estoque = () => {
   useEffect(() => {
     if (!editId && form.modelo && form.capacidade) {
       const sugerido = GRADE_PRECOS[form.modelo]?.[form.capacidade];
-      if (sugerido) setForm(prev => ({ ...prev, preco: formatMoney(sugerido) }));
+      if (sugerido) {
+        const precoFormatado = formatMoney(sugerido);
+        setForm(prev => ({ ...prev, preco: precoFormatado, precoVenda: precoFormatado }));
+      }
     }
   }, [form.modelo, form.capacidade, editId]);
 
@@ -167,7 +170,10 @@ const Estoque = () => {
     if (name === 'bateria') val = Math.min(100, value.replace(/\D/g, ''));
     if (['modelo', 'cor', 'fornecedor'].includes(name)) val = value.toUpperCase();
     if (['preco', 'precoCusto'].includes(name)) val = formatMoney(value);
-    setForm({ ...form, [name]: val });
+    setForm(prev => {
+      if (name === 'preco') return { ...prev, preco: val, precoVenda: val };
+      return { ...prev, [name]: val };
+    });
   };
 
   const imeiDuplicado = useMemo(() => {
@@ -248,7 +254,14 @@ const Estoque = () => {
   };
 
   const salvar = async () => {
-    const payload = { ...form, estado: form.estado || 'Novo', dataEntrada: editId ? form.dataEntrada : new Date().toISOString() };
+    const precoAtual = form.preco || form.precoVenda || '';
+    const payload = {
+      ...form,
+      preco: precoAtual,
+      precoVenda: precoAtual,
+      estado: form.estado || 'Novo',
+      dataEntrada: editId ? form.dataEntrada : new Date().toISOString()
+    };
     const saved = await (editId ? editarProduto(editId, payload) : adicionarProduto(payload));
     if (saved) setModal(false);
   };
@@ -265,7 +278,7 @@ const Estoque = () => {
                 }}>Exportar</ActionBtn>
               </>
             )}
-            <ActionBtn c="#ffffff" onClick={() => { setEditId(null); setForm({ modelo: '', imei: '', capacidade: '', cor: '', estado: 'Novo', bateria: '', garantia: '', origem: 'Anatel', fornecedor: '', precoCusto: '', preco: '', imagem: '' }); setModal(true); }}>+ NOVO ITEM</ActionBtn>
+            <ActionBtn c="#ffffff" onClick={() => { setEditId(null); setForm({ modelo: '', imei: '', capacidade: '', cor: '', estado: 'Novo', bateria: '', garantia: '', origem: 'Anatel', fornecedor: '', precoCusto: '', preco: '', precoVenda: '', imagem: '' }); setModal(true); }}>+ NOVO ITEM</ActionBtn>
         </div>
       </Header>
 
@@ -337,6 +350,7 @@ const Estoque = () => {
                         estado: p.estado || p.condicao || 'Novo',
                         precoCusto: p.precoCusto || '',
                         preco: p.preco || p.precoVenda || '',
+                        precoVenda: p.preco || p.precoVenda || '',
                         bateria: p.bateria || '',
                         garantia: p.garantia || '',
                         origem: p.origem || 'Anatel',

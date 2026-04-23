@@ -326,7 +326,11 @@ def _normalize_accessory_payload(data):
 
 
 def _normalize_product_payload(data):
-    preco_venda = get_valid_price(data)
+    preco_digitado = data.get('preco')
+    if preco_digitado is not None and str(preco_digitado).strip() != '':
+        preco_venda = get_valid_price({'preco': preco_digitado})
+    else:
+        preco_venda = get_valid_price(data)
     preco_custo = data.get('precoCusto', data.get('precocusto', '0'))
     condicao = data.get('condicao', data.get('estado', ''))
     return {
